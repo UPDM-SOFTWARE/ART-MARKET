@@ -56,7 +56,11 @@ const authenticateToken = (req, res, next) => {
 
 // Register
 app.post('/api/auth/register', async (req, res) => {
-  const { username, password, full_name, email } = req.body;
+  const { username, password, full_name, email, whatsapp } = req.body;
+
+  if (!whatsapp || !whatsapp.match(/^\+\d{10,15}$/)) {
+    return res.status(400).json({ message: 'El número de teléfono (WhatsApp) es obligatorio y debe incluir el código de país (ej. +52...)' });
+  }
 
   try {
     // Check if user exists
@@ -71,8 +75,8 @@ app.post('/api/auth/register', async (req, res) => {
 
     // Insert artist
     const newArtist = await pool.query(
-      'INSERT INTO artists (username, password, full_name, email) VALUES ($1, $2, $3, $4) RETURNING id, username, full_name',
-      [username, hashedPassword, full_name, email]
+      'INSERT INTO artists (username, password, full_name, email, whatsapp) VALUES ($1, $2, $3, $4, $5) RETURNING id, username, full_name, whatsapp',
+      [username, hashedPassword, full_name, email, whatsapp]
     );
 
     const token = jwt.sign({ id: newArtist.rows[0].id }, process.env.JWT_SECRET, { expiresIn: '30d' });

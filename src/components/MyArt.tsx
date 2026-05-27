@@ -114,6 +114,11 @@ const MyArt = ({ user, onUpdateUser, onArtClick }: { user: any, onUpdateUser: (u
   };
 
   const handleSaveProfile = async () => {
+    if (editData.whatsapp && !editData.whatsapp.match(/^\+\d{10,15}$/)) {
+      alert("El número de WhatsApp debe incluir código de país (ej. +52) y contener entre 10 y 15 dígitos.");
+      return;
+    }
+
     setIsSaving(true);
     try {
       const token = localStorage.getItem('token') || sessionStorage.getItem('token');
@@ -316,10 +321,10 @@ const MyArt = ({ user, onUpdateUser, onArtClick }: { user: any, onUpdateUser: (u
                         <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-xl px-4 py-2">
                           <MessageSquare size={16} className="text-primary/40" />
                           <input
-                            type="text"
+                            type="tel"
                             value={editData.whatsapp}
                             onChange={(e) => setEditData({ ...editData, whatsapp: e.target.value })}
-                            placeholder="WhatsApp (ej: +54...)"
+                            placeholder="WhatsApp (ej: +52...)"
                             className="bg-transparent border-none outline-none text-sm text-primary/80 placeholder:text-primary/10 w-full p-0"
                           />
                         </div>

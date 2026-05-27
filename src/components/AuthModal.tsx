@@ -29,7 +29,9 @@ const AuthModal = ({ isOpen, onClose, isLoggedIn, onLogin, onLogout, onError }: 
     password: '',
     confirmPassword: '',
     fullName: '',
-    email: ''
+    email: '',
+    phoneCode: '+52',
+    phoneNumber: ''
   });
 
   // Reset success message when modal opens/closes
@@ -63,7 +65,8 @@ const AuthModal = ({ isOpen, onClose, isLoggedIn, onLogin, onLogout, onError }: 
           username: formData.username,
           password: formData.password,
           full_name: formData.fullName,
-          email: formData.email
+          email: formData.email,
+          whatsapp: formData.phoneCode + formData.phoneNumber.replace(/\s+/g, '')
         };
 
       const response = await axios.post(`${API_URL}${endpoint}`, payload);
@@ -192,17 +195,49 @@ const AuthModal = ({ isOpen, onClose, isLoggedIn, onLogin, onLogout, onError }: 
                       </div>
 
                       {authMode === 'register' && (
-                        <div className="space-y-1">
-                          <label className="text-[9px] uppercase tracking-[0.2em] text-gray-500 font-bold">Email (Opcional)</label>
-                          <input
-                            name="email"
-                            type="email"
-                            value={formData.email}
-                            onChange={handleChange}
-                            placeholder="correo@ejemplo.com"
-                            className="w-full bg-transparent border-b border-white/10 py-2 focus:border-primary outline-none text-primary transition-colors placeholder:text-gray-800 text-sm"
-                          />
-                        </div>
+                        <>
+                          <div className="space-y-1">
+                            <label className="text-[9px] uppercase tracking-[0.2em] text-gray-500 font-bold">Email (Opcional)</label>
+                            <input
+                              name="email"
+                              type="email"
+                              value={formData.email}
+                              onChange={handleChange}
+                              placeholder="correo@ejemplo.com"
+                              className="w-full bg-transparent border-b border-white/10 py-2 focus:border-primary outline-none text-primary transition-colors placeholder:text-gray-800 text-sm"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[9px] uppercase tracking-[0.2em] text-gray-500 font-bold">Teléfono / WhatsApp</label>
+                            <div className="flex gap-2">
+                              <select
+                                name="phoneCode"
+                                value={formData.phoneCode}
+                                onChange={(e: any) => handleChange(e)}
+                                className="w-[100px] bg-transparent border-b border-white/10 py-2 focus:border-primary outline-none text-primary transition-colors text-sm"
+                              >
+                                <option value="+52" className="bg-[#080808] text-white">🇲🇽 +52</option>
+                                <option value="+54" className="bg-[#080808] text-white">🇦🇷 +54</option>
+                                <option value="+57" className="bg-[#080808] text-white">🇨🇴 +57</option>
+                                <option value="+56" className="bg-[#080808] text-white">🇨🇱 +56</option>
+                                <option value="+51" className="bg-[#080808] text-white">🇵🇪 +51</option>
+                                <option value="+34" className="bg-[#080808] text-white">🇪🇸 +34</option>
+                                <option value="+1" className="bg-[#080808] text-white">🇺🇸 +1</option>
+                              </select>
+                              <input
+                                name="phoneNumber"
+                                type="tel"
+                                value={formData.phoneNumber}
+                                onChange={handleChange}
+                                placeholder="123 456 7890"
+                                pattern="^\d{10,12}$"
+                                title="El número debe contener entre 10 y 12 dígitos (sin espacios ni guiones)."
+                                className="w-full bg-transparent border-b border-white/10 py-2 focus:border-primary outline-none text-primary transition-colors placeholder:text-gray-800 text-sm"
+                                required
+                              />
+                            </div>
+                          </div>
+                        </>
                       )}
 
                       <div className={authMode === 'register' ? 'grid grid-cols-1 sm:grid-cols-2 gap-5' : 'space-y-6'}>
