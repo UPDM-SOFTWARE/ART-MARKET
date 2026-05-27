@@ -21,7 +21,7 @@ const UploadArtModal = ({ isOpen, onClose, onUploadSuccess, editingArt }: Upload
     description: '',
     price: '',
     currency: 'USD',
-    category: 'Digital',
+    category: 'Arte',
     status: 'sale',
     dimensions: '',
     technique: ''
@@ -36,7 +36,7 @@ const UploadArtModal = ({ isOpen, onClose, onUploadSuccess, editingArt }: Upload
         description: editingArt.description || '',
         price: editingArt.price?.toString().replace(/[^\d.]/g, '') || '',
         currency: editingArt.currency || 'USD',
-        category: editingArt.category || 'Digital',
+        category: editingArt.category || 'Arte',
         status: editingArt.status || 'sale',
         dimensions: editingArt.dimensions || '',
         technique: editingArt.technique || ''
@@ -65,7 +65,7 @@ const UploadArtModal = ({ isOpen, onClose, onUploadSuccess, editingArt }: Upload
         description: '',
         price: '',
         currency: 'USD',
-        category: 'Digital',
+        category: 'Arte',
         status: 'venta',
         dimensions: '',
         technique: ''
@@ -195,7 +195,7 @@ const UploadArtModal = ({ isOpen, onClose, onUploadSuccess, editingArt }: Upload
       description: '',
       price: '',
       currency: 'USD',
-      category: 'Digital',
+      category: 'Arte',
       status: 'sale',
       dimensions: '',
       technique: ''
@@ -453,10 +453,7 @@ const UploadArtModal = ({ isOpen, onClose, onUploadSuccess, editingArt }: Upload
                           value={formData.category}
                           onChange={(e) => setFormData({...formData, category: e.target.value})}
                         >
-                          <option value="Digital" className="bg-[#0a0a0a]">Digital</option>
-                          <option value="Oleo" className="bg-[#0a0a0a]">Óleo</option>
-                          <option value="Escultura" className="bg-[#0a0a0a]">Escultura</option>
-                          <option value="Fotografia" className="bg-[#0a0a0a]">Fotografía</option>
+                          <option value="Arte" className="bg-[#0a0a0a]">Arte</option>
                         </select>
                       </div>
 

@@ -145,6 +145,10 @@ function App() {
           setCursorStatus('error');
           setTimeout(() => setCursorStatus('default'), 2000);
         }}
+        onGoToProfile={() => {
+          setCurrentView('my-art');
+          setShowAuth(false);
+        }}
       />
 
       {renderContent()}

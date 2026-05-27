@@ -12,11 +12,12 @@ interface AuthModalProps {
   onLogin: (userData: any) => void;
   onLogout: () => void;
   onError: () => void;
+  onGoToProfile?: () => void;
 }
 
 const API_URL = `${API_URL_BASE}/api/auth`;
 
-const AuthModal = ({ isOpen, onClose, isLoggedIn, onLogin, onLogout, onError }: AuthModalProps) => {
+const AuthModal = ({ isOpen, onClose, isLoggedIn, onLogin, onLogout, onError, onGoToProfile }: AuthModalProps) => {
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -328,7 +329,10 @@ const AuthModal = ({ isOpen, onClose, isLoggedIn, onLogin, onLogout, onError }: 
                     <p className="text-gray-500 text-[10px] uppercase tracking-widest mb-10">Usuario Activo</p>
 
                     <div className="w-full space-y-3 max-w-xs">
-                      <button className="w-full py-4 bg-white/5 hover:bg-white/10 text-primary border border-white/10 rounded-xl transition-all text-[10px] font-bold uppercase tracking-widest">
+                      <button 
+                        onClick={onGoToProfile}
+                        className="w-full py-4 bg-white/5 hover:bg-white/10 text-primary border border-white/10 rounded-xl transition-all text-[10px] font-bold uppercase tracking-widest"
+                      >
                         Ir a Mi Perfil
                       </button>
                       <button
