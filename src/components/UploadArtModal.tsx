@@ -10,6 +10,7 @@ interface UploadArtModalProps {
 }
 
 import API_URL from '../config';
+import { getAuthToken, notifySessionExpired } from '../utils/auth';
 
 const UploadArtModal = ({ isOpen, onClose, onUploadSuccess, editingArt }: UploadArtModalProps) => {
   const [loading, setLoading] = useState(false);
@@ -99,6 +100,13 @@ const UploadArtModal = ({ isOpen, onClose, onUploadSuccess, editingArt }: Upload
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (previews.length === 0) return;
+
+    const token = getAuthToken();
+    if (!token) {
+      notifySessionExpired();
+      alert("Tu sesión ha expirado o no has iniciado sesión. Por favor inicia sesión para continuar.");
+      return;
+    }
     
     setLoading(true);
     
@@ -131,7 +139,6 @@ const UploadArtModal = ({ isOpen, onClose, onUploadSuccess, editingArt }: Upload
       const extraImages = uploadedUrls.slice(1);
 
       // 2. Save to database
-      const token = localStorage.getItem('token');
       const url = isEditing 
         ? `${API_URL}/api/art/${editingArt.id}`
         : `${API_URL}/api/art`;
@@ -156,7 +163,22 @@ const UploadArtModal = ({ isOpen, onClose, onUploadSuccess, editingArt }: Upload
         })
       });
 
-      if (!apiResponse.ok) throw new Error('Error al guardar en la base de datos');
+      if (!apiResponse.ok) {
+        if (apiResponse.status === 401 || apiResponse.status === 403) {
+          notifySessionExpired();
+          alert("Tu sesión ha expirado o no tienes autorización. Por favor inicia sesión nuevamente.");
+          setLoading(false);
+          return;
+        }
+        let errorMessage = 'Error al guardar en la base de datos';
+        try {
+          const errorData = await apiResponse.json();
+          if (errorData?.message) errorMessage = errorData.message;
+        } catch {
+          // ignore error parsing json
+        }
+        throw new Error(errorMessage);
+      }
 
       const savedArt = await apiResponse.json();
 
@@ -180,9 +202,9 @@ const UploadArtModal = ({ isOpen, onClose, onUploadSuccess, editingArt }: Upload
         onUploadSuccess(resultArt);
         handleClose();
       }, 1500);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error al procesar la obra:", error);
-      alert("Error al guardar la obra. Verifica tu conexión.");
+      alert(error?.message || "Error al guardar la obra. Verifica tu conexión.");
       setLoading(false);
     }
   };

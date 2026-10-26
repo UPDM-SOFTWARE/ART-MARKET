@@ -5,6 +5,7 @@ import UploadArtModal from './UploadArtModal';
 import DeleteConfirmModal from './DeleteConfirmModal';
 
 import API_URL from '../config';
+import { getAuthToken, notifySessionExpired } from '../utils/auth';
 
 const MyArt = ({ user, onUpdateUser, onArtClick }: { user: any, onUpdateUser: (u: any) => void, onArtClick: (id: string) => void }) => {
   const [activeTab, setActiveTab] = useState('Vista General');
@@ -34,12 +35,20 @@ const MyArt = ({ user, onUpdateUser, onArtClick }: { user: any, onUpdateUser: (u
   useEffect(() => {
     const fetchArt = async () => {
       try {
-        const token = localStorage.getItem('token');
+        const token = getAuthToken();
+        if (!token) {
+          setArtworks([]);
+          return;
+        }
         const response = await fetch(`${API_URL}/api/art/my`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
         });
+        if (response.status === 401 || response.status === 403) {
+          notifySessionExpired();
+          return;
+        }
         if (response.ok) {
           const data = await response.json();
           // Adaptar formato si es necesario
@@ -58,7 +67,7 @@ const MyArt = ({ user, onUpdateUser, onArtClick }: { user: any, onUpdateUser: (u
     };
 
     fetchArt();
-  }, []);
+  }, [user]);
 
   const handleUploadSuccess = (newOrUpdatedArt: any) => {
     setArtworks(prev => {
@@ -88,15 +97,27 @@ const MyArt = ({ user, onUpdateUser, onArtClick }: { user: any, onUpdateUser: (u
   const confirmDeleteArt = async () => {
     if (!artToDelete) return;
 
+    const token = getAuthToken();
+    if (!token) {
+      notifySessionExpired();
+      alert("Tu sesión ha expirado o no has iniciado sesión. Por favor inicia sesión nuevamente.");
+      return;
+    }
+
     setIsDeletingArt(true);
     try {
-      const token = localStorage.getItem('token');
       const response = await fetch(`${API_URL}/api/art/${artToDelete.id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
+
+      if (response.status === 401 || response.status === 403) {
+        notifySessionExpired();
+        alert("Tu sesión ha expirado o no tienes autorización. Por favor inicia sesión nuevamente.");
+        return;
+      }
 
       if (response.ok) {
         setArtworks(prev => prev.filter((a: any) => a.id !== artToDelete.id));
@@ -119,9 +140,15 @@ const MyArt = ({ user, onUpdateUser, onArtClick }: { user: any, onUpdateUser: (u
       return;
     }
 
+    const token = getAuthToken();
+    if (!token) {
+      notifySessionExpired();
+      alert("Tu sesión ha expirado o no has iniciado sesión. Por favor inicia sesión nuevamente.");
+      return;
+    }
+
     setIsSaving(true);
     try {
-      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
       const response = await fetch(`${API_URL}/api/auth/profile`, {
         method: 'PUT',
         headers: {
@@ -130,6 +157,12 @@ const MyArt = ({ user, onUpdateUser, onArtClick }: { user: any, onUpdateUser: (u
         },
         body: JSON.stringify(editData)
       });
+
+      if (response.status === 401 || response.status === 403) {
+        notifySessionExpired();
+        alert("Tu sesión ha expirado o no tienes autorización. Por favor inicia sesión nuevamente.");
+        return;
+      }
 
       if (response.ok) {
         const updatedUser = await response.json();

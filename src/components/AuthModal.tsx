@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 
 import API_URL_BASE from '../config';
+import { saveAuthData, clearAuthData } from '../utils/auth';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -72,10 +73,8 @@ const AuthModal = ({ isOpen, onClose, isLoggedIn, onLogin, onLogout, onError, on
 
       const response = await axios.post(`${API_URL}${endpoint}`, payload);
 
-      // Save token based on keepLoggedIn
-      const storage = keepLoggedIn ? localStorage : sessionStorage;
-      storage.setItem('token', response.data.token);
-      storage.setItem('user', JSON.stringify(response.data.user));
+      // Save token and user data safely
+      saveAuthData(response.data.token, response.data.user, keepLoggedIn);
 
       setSuccessMessage(`¡Bienvenido de nuevo, ${response.data.user.username}!`);
 
@@ -96,10 +95,7 @@ const AuthModal = ({ isOpen, onClose, isLoggedIn, onLogin, onLogout, onError, on
     setSuccessMessage('Sesión cerrada. ¡Vuelve pronto!');
 
     setTimeout(() => {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      sessionStorage.removeItem('token');
-      sessionStorage.removeItem('user');
+      clearAuthData();
       onLogout();
       onClose();
     }, 1500);

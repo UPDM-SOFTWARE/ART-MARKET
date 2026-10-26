@@ -11,6 +11,7 @@ import MyArt from './components/MyArt';
 import ArtMarket from './components/ArtMarket';
 import ArtDetail from './components/ArtDetail';
 import { useState, useEffect } from 'react';
+import { getAuthToken, getAuthUser, clearAuthData } from './utils/auth';
 
 function App() {
   const [showContact, setShowContact] = useState(false);
@@ -22,15 +23,31 @@ function App() {
   const [previousView, setPreviousView] = useState<'home' | 'my-art' | 'market' | 'gallery'>('home');
   const [selectedArtId, setSelectedArtId] = useState<string | null>(null);
 
-  // Check for existing session
+  // Check for existing session and listen for session expiration
   useEffect(() => {
-    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-    const userData = localStorage.getItem('user') || sessionStorage.getItem('user');
+    const token = getAuthToken();
+    const currentUser = getAuthUser();
 
-    if (token && userData) {
+    if (token && currentUser) {
       setIsLoggedIn(true);
-      setUser(JSON.parse(userData));
+      setUser(currentUser);
+    } else {
+      setIsLoggedIn(false);
+      setUser(null);
+      clearAuthData();
     }
+
+    const handleSessionExpired = () => {
+      setIsLoggedIn(false);
+      setUser(null);
+      clearAuthData();
+      setShowAuth(true);
+      setCursorStatus('error');
+      setTimeout(() => setCursorStatus('default'), 2000);
+    };
+
+    window.addEventListener('auth:expired', handleSessionExpired);
+    return () => window.removeEventListener('auth:expired', handleSessionExpired);
   }, []);
 
   const handleViewArt = (id: string) => {

@@ -6,6 +6,8 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
+const JWT_SECRET = process.env.JWT_SECRET || 'art_market_secret_key_2024';
+
 const app = express();
 
 const pool = new Pool({
@@ -43,10 +45,15 @@ const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
-  if (!token) return res.status(401).json({ message: 'Acceso denegado' });
+  if (!token || token === 'null' || token === 'undefined' || token.trim() === '') {
+    return res.status(401).json({ message: 'Acceso denegado: Token no proporcionado' });
+  }
 
-  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-    if (err) return res.status(403).json({ message: 'Token inválido' });
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) {
+      console.warn(`[AUTH] Verificación de token fallida (${err.name}): ${err.message}`);
+      return res.status(403).json({ message: 'Token inválido o expirado' });
+    }
     req.user = user;
     next();
   });
@@ -79,7 +86,7 @@ app.post('/api/auth/register', async (req, res) => {
       [username, hashedPassword, full_name, email, whatsapp]
     );
 
-    const token = jwt.sign({ id: newArtist.rows[0].id }, process.env.JWT_SECRET, { expiresIn: '30d' });
+    const token = jwt.sign({ id: newArtist.rows[0].id }, JWT_SECRET, { expiresIn: '30d' });
 
     res.json({
       token,
@@ -107,7 +114,7 @@ app.post('/api/auth/login', async (req, res) => {
       return res.status(400).json({ message: 'Credenciales inválidas' });
     }
 
-    const token = jwt.sign({ id: artist.rows[0].id }, process.env.JWT_SECRET, { expiresIn: '30d' });
+    const token = jwt.sign({ id: artist.rows[0].id }, JWT_SECRET, { expiresIn: '30d' });
 
     res.json({
       token,
